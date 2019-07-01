@@ -2,8 +2,8 @@
 /**
  * Helper class for adding image classes
  */
-if ( ! class_exists( 'WPIS_Image_Processer' ) ) {
-	class WPIS_Image_Processer {
+if ( ! class_exists( 'WPIS_Image_Processor' ) ) {
+	class WPIS_Image_Processor {
 		private
 			$all_post_types = true,
 			$post_types = array(),
@@ -15,7 +15,7 @@ if ( ! class_exists( 'WPIS_Image_Processer' ) ) {
 			$images_skipped = 0;
 
 		/**
-		 * Constructs a new instance of WPIS_Image_Processer
+		 * Constructs a new instance of WPIS_Image_Processor
 		 * @author Jim Barnes
 		 * @since 1.0.0
 		 */

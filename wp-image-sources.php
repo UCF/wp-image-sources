@@ -14,6 +14,6 @@ if ( ! defined( 'WPINC' ) ) {
 
 if ( defined( 'WP_CLI' ) ) {
 	require_once 'includes/class-image-utility.php';
-	require_once 'includes/class-image-processer.php';
+	require_once 'includes/class-image-processor.php';
 	require_once 'commands/wp-cli-add-image-class.php';
 }
