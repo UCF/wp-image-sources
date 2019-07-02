@@ -1,0 +1,7 @@
+{
+    "name": "ucf/wp-webp-images",
+    "version": "1.0.0",
+    "require": {
+        "rosell-dk/webp-convert": "^1.3"
+    }
+}

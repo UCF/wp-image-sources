@@ -6,7 +6,7 @@ if ( ! class_exists( 'WP_Image_Sources_Commands' ) ) {
 		 *
 		 * ## EXAMPLES
 		 *
-		 * wp media add-image-class
+		 * wp media add-class
 		 *
 		 * @when after_wp_load
 		 */
