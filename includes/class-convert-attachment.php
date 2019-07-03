@@ -30,6 +30,10 @@ if ( ! class_exists( 'WPIS_Convert_Attachment' ) ) {
 			foreach( $this->images as $size => $detail ) {
 				$destination = preg_replace( $pattern, $replacement, $detail['path'] );
 
+				// If the path and destination is the same
+				// it's not a compatible file type.
+				if ( $detail['path'] === $destination ) continue;
+
 				try {
 					WebPConvert::convert( $detail['path'], $destination, array(
 						'quality' => 70
