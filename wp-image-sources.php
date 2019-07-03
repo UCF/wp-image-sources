@@ -16,12 +16,33 @@ define( 'WPIS__PLUGIN_FILE', __FILE__ );
 define( 'WPIS__PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WPIS__VENDOR_DIR', WPIS__PLUGIN_DIR . '/vendor' );
 
+/**
+ * General includes required for all functionality
+ */
+require_once 'includes/class-image-utility.php';
+require_once 'includes/class-convert-attachment.php';
+require_once 'includes/class-filters.php';
+
 if ( defined( 'WP_CLI' ) ) {
-	require_once 'includes/class-image-utility.php';
+	/**
+	 * Specific includes for WP_CLI
+	 */
 	require_once 'includes/class-image-processor.php';
 	require_once 'commands/wp-cli-add-image-class.php';
 
-	require_once 'includes/class-convert-attachment.php';
 	require_once 'includes/class-image-webp-converter.php';
 	require_once 'commands/wp-cli-webp-convert.php';
+}
+
+if ( ! function_exists( 'wpis_init' ) ) {
+	/**
+	 * Function that runs when all plugins are loaded
+	 * @author Jim Barnes
+	 * @since 1.0.0
+	 */
+	function wpis_init() {
+		add_filter( 'wp_generate_attachment_metadata', array( 'WPIS_Filters', 'wpis_generate_attachment_metadata' ), 10, 2 );
+	}
+
+	add_action( 'plugins_loaded', 'wpis_init' );
 }

@@ -11,7 +11,8 @@ if ( ! class_exists( 'WPIS_Convert_Attachment' ) ) {
 	class WPIS_Convert_Attachment {
 		public
 			$attachment_id,
-			$metadata = array();
+			$metadata = array(),
+			$custom_meta = array();
 
 		private
 			$images = array();
@@ -24,10 +25,11 @@ if ( ! class_exists( 'WPIS_Convert_Attachment' ) ) {
 		}
 
 		public function convert() {
-			$pattern = '/(.*)(\.jpg|\.jpeg|\.png)/';
+			$pattern = '/(.*)(\.jpg|\.jpeg|\.png)$/';
 			$replacement = '$1.webp';
 
 			foreach( $this->images as $size => $detail ) {
+
 				$destination = preg_replace( $pattern, $replacement, $detail['path'] );
 
 				// If the path and destination is the same
