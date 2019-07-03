@@ -38,12 +38,12 @@ if ( ! class_exists( 'WPIS_Convert_Attachment' ) ) {
 					WebPConvert::convert( $detail['path'], $destination, array(
 						'quality' => 70
 					) );
-
-					update_post_meta( $this->attachment_id, 'has_webp', true );
 				} catch ( Exception $e ) {
 					throw new Exception("Failed to convert file.");
 				}
 			}
+
+			update_post_meta( $this->attachment_id, 'has_webp', true );
 		}
 
 		private function fill_images_array() {
