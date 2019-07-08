@@ -22,5 +22,18 @@ if ( ! class_exists( 'WPIS_Filters' ) ) {
 
 			return $metadata;
 		}
+
+		/**
+		 * Filter that runs when an attachment id deleted
+		 * @author Jim Barnes
+		 * @since 1.0.0
+		 * @param int $attachment_id The attachment id
+		 */
+		public static function wpis_delete_attachment( $attachment_id ) {
+			if ( wp_attachment_is_image( $attachment_id ) ) {
+				$util = new WPIS_Convert_Attachment( $attachment_id );
+				$util->delete_attachment();
+			}
+		}
 	}
 }

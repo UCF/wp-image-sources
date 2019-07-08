@@ -28,6 +28,10 @@ if ( ! class_exists( 'WPIS_Convert_Attachment' ) ) {
 			$pattern = '/(.*)(\.jpg|\.jpeg|\.png)$/';
 			$replacement = '$1.webp';
 
+			$this->custom_meta = $this->metadata;
+			$this->custom_meta['sizes'] = array();
+			$this->custom_meta['file'] = preg_replace( $pattern, $replacement, $this->metadata['file'] );
+
 			foreach( $this->images as $size => $detail ) {
 
 				$destination = preg_replace( $pattern, $replacement, $detail['path'] );
@@ -40,12 +44,42 @@ if ( ! class_exists( 'WPIS_Convert_Attachment' ) ) {
 					WebPConvert::convert( $detail['path'], $destination, array(
 						'quality' => 70
 					) );
+
+					$this->custom_meta['sizes'][$size] = array(
+						'width'     => $detail['width'],
+						'height'    => $detail['height'],
+						'mime-type' => 'image/webp',
+						'file'      => basename( $destination )
+					);
 				} catch ( Exception $e ) {
 					throw new Exception("Failed to convert file.");
 				}
 			}
 
 			update_post_meta( $this->attachment_id, 'has_webp', true );
+			update_post_meta( $this->attachment_id, '_wp_webp_metadata', $this->custom_meta );
+		}
+
+		/**
+		 * Deletes additional files
+		 * @author Jim Barnes
+		 * @since 1.0.0
+		 */
+		public function delete_attachment() {
+			$pattern = '/(.*)(\.jpg|\.jpeg|\.png)$/';
+			$replacement = '$1.webp';
+
+			if ( isset( $this->images['fullsize'] ) && isset( $this->images['fullsize']['path'] ) ) {
+				$full_path = preg_replace( $pattern, $replacement, $this->images['fullsize']['path'] );
+				wp_delete_file( $full_path );
+			}
+
+			foreach( $this->images as $size => $detail ) {
+				$file_path = preg_replace( $pattern, $replacement, $detail['path'] );
+				wp_delete_file( $file_path );
+			}
+
+			delete_post_meta( $this->attachment_id, '_wp_webp_metadata' );
 		}
 
 		private function fill_images_array() {
