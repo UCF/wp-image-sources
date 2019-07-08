@@ -24,7 +24,7 @@ if ( ! class_exists( 'WPIS_Filters' ) ) {
 		}
 
 		/**
-		 * Filter that runs when an attachment id deleted
+		 * Filter that runs when an attachment is deleted
 		 * @author Jim Barnes
 		 * @since 1.0.0
 		 * @param int $attachment_id The attachment id
