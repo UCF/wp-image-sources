@@ -42,13 +42,17 @@ if ( ! class_exists( 'WPIS_WebP_Converter' ) ) {
 			$progress = \WP_CLI\Utils\make_progress_bar( 'Converting images...', $this->image_attachments);
 
 			foreach( $this->attachments as $a_id ) {
-				try {
-					$util = new WPIS_Convert_Attachment( $a_id );
-					$util->convert();
+				$util = new WPIS_Convert_Attachment( $a_id );
+				$status = $util->convert();
 
-					$this->images_converted++;
-				} catch ( Exception $e ) {
+				if ( wpis_is_convert_error( $status ) ) {
+					if ( WP_DEBUG === true ) {
+						error_log( $status->get_error_string() );
+					}
+
 					$this->images_failed++;
+				} else {
+					$this->images_converted++;
 				}
 
 				$progress->tick();

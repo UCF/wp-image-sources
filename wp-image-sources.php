@@ -20,6 +20,8 @@ define( 'WPIS__VENDOR_DIR', WPIS__PLUGIN_DIR . '/vendor' );
  * General includes required for all functionality
  */
 require_once 'includes/class-image-utility.php';
+require_once 'includes/wpis-utilities.php';
+require_once 'includes/class-convert-error.php';
 require_once 'includes/class-convert-attachment.php';
 require_once 'includes/class-filters.php';
 
