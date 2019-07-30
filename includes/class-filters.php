@@ -80,11 +80,100 @@ if ( ! class_exists( 'WPIS_Filters' ) ) {
 
 				foreach ( $selected_images as $image => $attachment_id ) {
 					$image_meta = wp_get_attachment_metadata( $attachment_id );
-					$content    = str_replace( $image, wp_image_add_srcset_and_sizes( $image, $image_meta, $attachment_id ), $content );
+					$image_str = wp_image_add_srcset_and_sizes( $image, $image_meta, $attachment_id );
+
+					$source = '<source>';
+					$webp_meta = get_post_meta( $attachment_id, '_wp_webp_metadata', true );
+					$webp_str = WPIS_Filters::wpis_source_add_srcset_and_sizes( $image, $webp_meta, $attachment_id );
+
+					$full_string = $image_str;
+
+					if ( $webp_str !== '' ) {
+						$full_string = '<picture>' . $webp_str . $full_string . '</picture>';
+					}
+
+					$content    = str_replace( $image, $full_string, $content );
 				}
 			}
 
 			return $content;
+		}
+
+		public static function wpis_source_add_srcset_and_sizes( $image, $image_meta, $attachment_id ) {
+			// Ensure the image meta exists.
+			if ( empty( $image_meta['sizes'] ) ) {
+				return $image;
+			}
+
+			$image_src         = preg_match( '/src="([^"]+)"/', $image, $match_src ) ? $match_src[1] : '';
+			list( $image_src ) = explode( '?', $image_src );
+
+			// Return early if we couldn't get the image source.
+			if ( ! $image_src ) {
+				return $image;
+			}
+
+			// Bail early if an image has been inserted and later edited.
+			if ( preg_match( '/-e[0-9]{13}/', $image_meta['file'], $img_edit_hash ) &&
+				strpos( wp_basename( $image_src ), $img_edit_hash[0] ) === false ) {
+
+				return $image;
+			}
+
+			$width  = preg_match( '/ width="([0-9]+)"/', $image, $match_width ) ? (int) $match_width[1] : 0;
+			$height = preg_match( '/ height="([0-9]+)"/', $image, $match_height ) ? (int) $match_height[1] : 0;
+
+			if ( ! $width || ! $height ) {
+				/*
+				* If attempts to parse the size value failed, attempt to use the image meta data to match
+				* the image file name from 'src' against the available sizes for an attachment.
+				*/
+				$image_filename = str_replace( array( '.png', '.jpg', '.jpeg' ), '.webp', wp_basename( $image_src ) );
+
+				if ( $image_filename === wp_basename( $image_meta['file'] ) ) {
+					$width  = (int) $image_meta['width'];
+					$height = (int) $image_meta['height'];
+				} else {
+					foreach ( $image_meta['sizes'] as $image_size_data ) {
+						if ( $image_filename === $image_size_data['file'] ) {
+							$width  = (int) $image_size_data['width'];
+							$height = (int) $image_size_data['height'];
+							break;
+						}
+					}
+				}
+			}
+
+			if ( ! $width || ! $height ) {
+				return $image;
+			}
+
+			$size_array = array( $width, $height );
+			$image_src  = str_replace( array( '.png', '.jpg', 'jpeg' ), '.webp', $image_src );
+			$srcset     = wp_calculate_image_srcset( $size_array, $image_src, $image_meta, $attachment_id );
+
+			if ( $srcset ) {
+				// Check if there is already a 'sizes' attribute.
+				$sizes = strpos( $image, ' sizes=' );
+
+				if ( ! $sizes ) {
+					$sizes = wp_calculate_image_sizes( $size_array, $image_src, $image_meta, $attachment_id );
+				}
+			}
+
+			if ( $srcset && $sizes ) {
+				// Format the 'srcset' and 'sizes' string and escape attributes.
+				$attr = sprintf( ' srcset="%s"', esc_attr( $srcset ) );
+
+				if ( is_string( $sizes ) ) {
+					$attr .= sprintf( ' sizes="%s"', esc_attr( $sizes ) );
+				}
+
+				// Add 'srcset' and 'sizes' attributes to the image markup.
+				$image = preg_replace( '/<img ([^>]+?)[\/ ]*>/', '<source' . $attr . '>', $image );
+			}
+
+			return $image;
 		}
 	}
 }
