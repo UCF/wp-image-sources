@@ -46,8 +46,8 @@ if ( ! function_exists( 'wpis_init' ) ) {
 		add_filter( 'wp_generate_attachment_metadata', array( 'WPIS_Filters', 'wpis_generate_attachment_metadata' ), 10, 2 );
 		add_filter( 'delete_attachment', array( 'WPIS_Filters', 'wpis_delete_attachment' ), 10, 1 );
 
-		remove_filter( 'the_content', 'wp_get_attachment_image_srcset' );
-		add_filter( 'the_content', array( 'WPIS_Filters', 'wpis_get_attachment_image_srcset' ), 10, 1 );
+		remove_filter( 'the_content', 'wp_make_content_images_responsive' );
+		add_filter( 'the_content', array( 'WPIS_Filters', 'wpis_make_content_images_responsive' ), 10, 1 );
 	}
 
 	add_action( 'plugins_loaded', 'wpis_init' );

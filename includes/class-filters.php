@@ -43,7 +43,7 @@ if ( ! class_exists( 'WPIS_Filters' ) ) {
 		 * @param string $content The content
 		 * @return string The filtered content
 		 */
-		public static function wpis_get_attachment_image_srcset( $content ) {
+		public static function wpis_make_content_images_responsive( $content ) {
 			preg_match_all( '/<img[\s]*[^<]*>(?!<noscript>|<\/noscript>)/is', $content, $matches );
 
 			$selected_images = [];
