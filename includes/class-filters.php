@@ -82,7 +82,6 @@ if ( ! class_exists( 'WPIS_Filters' ) ) {
 					$image_meta = wp_get_attachment_metadata( $attachment_id );
 					$image_str = wp_image_add_srcset_and_sizes( $image, $image_meta, $attachment_id );
 
-					$source = '<source>';
 					$webp_meta = get_post_meta( $attachment_id, '_wp_webp_metadata', true );
 					$webp_str = WPIS_Filters::wpis_source_add_srcset_and_sizes( $image, $webp_meta, $attachment_id );
 
