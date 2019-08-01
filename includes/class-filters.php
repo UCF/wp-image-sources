@@ -44,7 +44,7 @@ if ( ! class_exists( 'WPIS_Filters' ) ) {
 		 * @return string The filtered content
 		 */
 		public static function wpis_make_content_images_responsive( $content ) {
-			preg_match_all( '/<img[\s]*[^<]*\/?>(?!<noscript>|<\/noscript>)/is', $content, $matches );
+			preg_match_all( '/<img[\s]*(?:class="[\w\s]*?wp-image-\d+[\w\s]*?)[^<]*\/?>(?!<noscript>|<\/noscript>)/is', $content, $matches );
 
 			$selected_images = [];
 			$attachment_ids = [];
@@ -79,6 +79,7 @@ if ( ! class_exists( 'WPIS_Filters' ) ) {
 				}
 
 				foreach ( $selected_images as $image => $attachment_id ) {
+
 					$image_meta = wp_get_attachment_metadata( $attachment_id );
 					$image_str = wp_image_add_srcset_and_sizes( $image, $image_meta, $attachment_id );
 
@@ -91,7 +92,7 @@ if ( ! class_exists( 'WPIS_Filters' ) ) {
 						$full_string = '<picture>' . $webp_str . $full_string . '</picture>';
 					}
 
-					$content    = str_replace( $image, $full_string, $content );
+					$content = str_replace( $image, $full_string, $content );
 				}
 			}
 
