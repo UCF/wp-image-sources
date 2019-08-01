@@ -44,7 +44,7 @@ if ( ! class_exists( 'WPIS_Filters' ) ) {
 		 * @return string The filtered content
 		 */
 		public static function wpis_make_content_images_responsive( $content ) {
-			preg_match_all( '/<img[\s]*(?:class="[\w\s]*?wp-image-\d+[\w\s]*?)[^<]*\/?>(?!<noscript>|<\/noscript>)/is', $content, $matches );
+			preg_match_all( '/<img[^<]*(?:wp-image-\d+)[^<]*\/?>(?!<noscript>|<\/noscript>)/is', $content, $matches );
 
 			$selected_images = [];
 			$attachment_ids = [];
