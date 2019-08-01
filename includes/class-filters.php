@@ -83,6 +83,7 @@ if ( ! class_exists( 'WPIS_Filters' ) ) {
 						continue;
 					}
 
+
 					$image_meta = wp_get_attachment_metadata( $attachment_id );
 					$image_str = wp_image_add_srcset_and_sizes( $image, $image_meta, $attachment_id );
 
