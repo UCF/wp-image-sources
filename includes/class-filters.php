@@ -44,7 +44,7 @@ if ( ! class_exists( 'WPIS_Filters' ) ) {
 		 * @return string The filtered content
 		 */
 		public static function wpis_make_content_images_responsive( $content ) {
-			preg_match_all( '/<img[\s]*[^<]*>/is', $content, $matches );
+			preg_match_all( '/<img[\s]*[^<]*\/?>(?!<noscript>|<\/noscript>)/is', $content, $matches );
 
 			$selected_images = [];
 			$attachment_ids = [];
@@ -56,7 +56,7 @@ if ( ! class_exists( 'WPIS_Filters' ) ) {
 						continue;
 					}
 
-					if ( false === strpos( $image, ' srcset=' ) && preg_match( '/wp-image-([0-9]+)/i', $image, $class_id ) ) {
+					if ( false === strpos( $image, 'srcset=' ) && preg_match( '/wp-image-([0-9]+)/i', $image, $class_id ) ) {
 						$attachment_id = absint( $class_id[1] );
 						if ( $attachment_id ) {
 							/*
