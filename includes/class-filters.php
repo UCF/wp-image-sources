@@ -79,6 +79,9 @@ if ( ! class_exists( 'WPIS_Filters' ) ) {
 				}
 
 				foreach ( $selected_images as $image => $attachment_id ) {
+					if ( ! wp_attachment_is_image( $attachment_id ) ) {
+						continue;
+					}
 
 					$image_meta = wp_get_attachment_metadata( $attachment_id );
 					$image_str = wp_image_add_srcset_and_sizes( $image, $image_meta, $attachment_id );
