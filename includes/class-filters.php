@@ -103,6 +103,15 @@ if ( ! class_exists( 'WPIS_Filters' ) ) {
 			return $content;
 		}
 
+		/**
+		 * Functions that adds srcset and sizes attributes to source elements
+		 * @author Jim Barnes
+		 * @since 1.0.0
+		 * @param string $image The image markup
+		 * @param array $image_meta The meta array
+		 * @param int $attachment_id The attachment_id
+		 * @return string
+		 */
 		public static function wpis_source_add_srcset_and_sizes( $image, $image_meta, $attachment_id ) {
 			// Ensure the image meta exists.
 			if ( empty( $image_meta['sizes'] ) ) {
@@ -178,6 +187,134 @@ if ( ! class_exists( 'WPIS_Filters' ) ) {
 			}
 
 			return $image;
+		}
+
+		/**
+		 * Overrides for image_downsize function to return webp
+		 * @author Jim Barnes
+		 * @since 1.0.0
+		 * @param bool         $downsize Whether to short-circuit the image downsize. Default false.
+		 * @param int          $id       Attachment ID for image.
+		 * @param array|string $size     Size of image. Image size or array of width and height values (in that order).
+		 *                               Default 'medium'.
+		 */
+		public static function wpis_image_downsize( $downsize, $attachment_id, $size = 'thumbnail' ) {
+			if ( $downsize ) {
+				return false;
+			}
+
+			if ( ! strpos( $size, '-webp' ) ) {
+				return $downsize;
+			}
+
+			$std_size         = str_replace( '-webp', '', $size );
+			$is_image         = wp_attachment_is_image( $attachment_id );
+			$img_url          = wp_get_attachment_url( $attachment_id );
+			$meta             = get_post_meta( $attachment_id, '_wp_webp_metadata', true );
+			$width            = $height = 0;
+			$is_intermediate  = false;
+			$img_url_basename = wp_basename( $img_url );
+
+			if ( $intermediate = self::wpis_image_get_intermediate_size( null, $attachment_id, $size ) ) {
+				$img_url = str_replace( $img_url_basename, $intermediate['file'], $img_url );
+				$width   = $intermediate['width'];
+				$height  = $intermediate['height'];
+			}
+
+			if ( ! $width && ! $height && isset( $meta['width'] ) && isset( $meta['height'] ) ) {
+				$width  = $meta['width'];
+				$height = $meta['height'];
+			}
+
+			if ( $img_url ) {
+				list( $width, $height ) = image_constrain_size_for_editor( $width, $height, $std_size );
+				return array( $img_url, $width, $height, $is_intermediate );
+			}
+
+			return false;
+
+		}
+
+		/**
+		 * Custom filter for returning webp sources
+		 * @author Jim Barnes
+		 * @since 1.0.0
+		 * @param array        $data    Array of file relative path, width, and height on success. May also include
+		 *                              file absolute path and URL.
+		 * @param int          $post_id The post_id of the image attachment
+		 * @param string|array $size    Registered image size or flat array of initially-requested height and width
+		 *                              dimensions (in that order).
+		 * @return false|array Returns an array (url, width, height, is_intermediate), or false, if no image is available.
+		 */
+		public static function wpis_image_get_intermediate_size( $data, $post_id, $size = 'thumbnail' ) {
+			// Return early if this isn't a webp image size being requested.
+			if ( ! strpos( $size, '-webp' ) ) {
+				return $data;
+			}
+
+			// Returns out if webp size doesn't exist.
+			if ( ! $size || ! is_array( $image_meta = get_post_meta( $post_id, '_wp_webp_metadata', true ) ) || empty( $image_meta ) ) {
+				return false;
+			}
+
+			$std_size = str_replace( '-webp', '', $size );
+			$data     = array();
+
+			if ( is_array( $size ) ) {
+				$candidates = array();
+
+				if ( ! isset( $image_meta['file'] ) && isset( $image_meta['sizes']['fullsize'] ) ) {
+					$image_meta['height'] = $image_meta['sizes']['full']['height'];
+					$image_meta['width'] = $image_meta['sizes']['full']['width'];
+				}
+
+				foreach( $image_meta['sizes'] as $_size => $data ) {
+					if ( $data['width'] == $size[0] && $data['height'] == $size[1] ) {
+						$candidates[ $data['width'] * $data['height'] ] = $data;
+						break;
+					}
+
+					if ( $data['width'] >= $size[0] && $data['height'] >= $size[1] ) {
+						if ( 0 === $size[0] || 0 === $size[1] ) {
+							$same_ratio = wp_image_matches_ratio( $data['width'], $data['height'], $image_meta['width'], $image_meta['height'] );
+						} else {
+							$same_ratio = wp_image_matches_ratio( $data['width'], $data['height'], $size[0], $size[1] );
+						}
+
+						if ( $same_ratio ) {
+							$candidates[ $data['width'] * $data['height'] ] = $data;
+						}
+					}
+				}
+
+				if ( ! empty( $candidates ) ) {
+					if ( 1 < count( $candidates ) ) {
+						ksort( $candidates );
+					}
+
+					$data = array_shift( $candidates );
+				} elseif ( ! empty( $image_meta['sizes']['thumbnail'] ) && $image_meta['sizes']['thumbnail']['width'] >= $size[0] && $image_meta['sizes']['thumbnail']['width'] >= $size[1] ) {
+					$data = $image_meta['sizes']['thumbnail'];
+				} else {
+					return false;
+				}
+
+				list( $data['width'], $data['height'] ) = image_constrain_size_for_editor( $data['width'], $data['height'], $size );
+			} elseif ( ! empty( $image_meta['sizes'][$std_size] ) ) {
+				$data = $image_meta['sizes'][$std_size];
+			}
+
+			if ( empty( $data ) ) {
+				return false;
+			}
+
+			if ( empty( $data['path'] ) && ! empty( $data['file'] ) && ! empty( $image_meta['file'] ) ) {
+				$file_url     = wp_get_attachment_url( $post_id );
+				$data['path'] = path_join( dirname( $image_meta['file'] ), $data['file'] );
+				$data['url']  = path_join( dirname( $file_url ), $data['file'] );
+			}
+
+			return $data;
 		}
 	}
 }

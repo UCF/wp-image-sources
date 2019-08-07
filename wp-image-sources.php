@@ -75,6 +75,8 @@ if ( ! function_exists( 'wpis_init' ) ) {
 		if ( WPIS_Config::get_option_or_default( 'filter_content' ) === true ) {
 			remove_filter( 'the_content', 'wp_make_content_images_responsive' );
 			add_filter( 'the_content', array( 'WPIS_Filters', 'wpis_make_content_images_responsive' ), 99, 1 );
+			add_filter( 'image_get_intermediate_size', array( 'WPIS_Filters', 'wpis_image_get_intermediate_size' ), 10, 3 );
+			add_filter( 'image_downsize', array( 'WPIS_Filters', 'wpis_image_downsize' ), 10, 3 );
 		}
 	}
 
