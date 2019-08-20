@@ -110,7 +110,7 @@ if ( ! class_exists( 'WPIS_Config' ) ) {
 		public static function format_option( $value, $option_name ) {
 			$option_name_no_prefix = str_replace( self::$option_prefix, '', $option_name );
 
-			$option_formatted = self::$format_options( array( $option_name_no_prefix => $value ) );
+			$option_formatted = self::format_options( array( $option_name_no_prefix => $value ) );
 			return $option_formatted;
 		}
 
